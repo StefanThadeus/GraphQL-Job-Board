@@ -1,6 +1,21 @@
 import { GraphQLClient, gql } from "graphql-request";
+import { getAccessToken } from "../auth.js";
 
-const client = new GraphQLClient("http://localhost:9000/graphql");
+const client = new GraphQLClient("http://localhost:9000/graphql", {
+  // Use a function so the Authorization header is computed for each request.
+  // That keeps it in sync with the current logged-in user and token state.
+  headers: () => {
+    const accessToken = getAccessToken();
+
+    if (!accessToken) {
+      return {};
+    }
+
+    return {
+      Authorization: `Bearer ${accessToken}`,
+    };
+  },
+});
 
 export async function createJob({ title, description }) {
   const mutation = gql`
